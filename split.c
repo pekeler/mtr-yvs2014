@@ -32,6 +32,7 @@
 #include "mtr.h"
 #include "display.h"
 #include "dns.h"
+#include "asn.h"
 
 #include "net.h"
 #include "split.h"
@@ -81,7 +82,7 @@ extern int af;
 
 /* There is 256 hops max in the IP header (coded with a byte) */
 #define MAX_LINE_COUNT 256
-#define MAX_LINE_SIZE  256
+#define MAX_LINE_SIZE  512
 
 char Lines[MAX_LINE_COUNT][MAX_LINE_SIZE];
 int  LineCount;
@@ -126,12 +127,13 @@ void split_redraw(void)
         name = str;
       }
       /* May be we should test name's length */
-      snprintf(newLine, sizeof(newLine), "%s %.1f %d %d %.1f %.1f %.1f %.1f", name,
+      snprintf(newLine, sizeof(newLine), "%s %.1f %d %d %.1f %.1f %.1f %.1f %s", name,
                net_loss(at)/1000.0,
                net_returned(at), net_xmit(at),
                net_best(at) /1000.0, net_avg(at)/1000.0,
                net_worst(at)/1000.0,
-               net_stdev(at)/1000.0);
+               net_stdev(at)/1000.0,
+               fmt_ipinfo(addr));
     } else {
       sprintf(newLine, "???");
     }
@@ -155,9 +157,9 @@ void split_redraw(void)
           if (!(name = dns_lookup(addrs)))
             name = strlongip(addrs);
           if (show_ips) {
-            SPLIT_PRINT(("- %d %d %s %s", at+1, i+1, name, strlongip(addrs)));
+            SPLIT_PRINT(("- %d %d %s %s %s", at+1, i+1, name, strlongip(addrs), fmt_ipinfo(addrs)));
           } else {
-            SPLIT_PRINT(("- %d %d %s", at+1, i+1, name));
+            SPLIT_PRINT(("- %d %d %s %s", at+1, i+1, name, fmt_ipinfo(addrs)));
           }
         }
       }
