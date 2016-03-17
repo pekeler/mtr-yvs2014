@@ -94,7 +94,7 @@ void split_redraw(void)
 {
   int   max;
   int   at;
-  ip_t *addr;
+  ip_t *addr, *addrs;
   char  newLine[MAX_LINE_SIZE];
   int   i;
 
@@ -126,11 +126,12 @@ void split_redraw(void)
         name = str;
       }
       /* May be we should test name's length */
-      snprintf(newLine, sizeof(newLine), "%s %d %d %d %d %d %d", name,
-               net_loss(at),
+      snprintf(newLine, sizeof(newLine), "%s %.1f %d %d %.1f %.1f %.1f %.1f", name,
+               net_loss(at)/1000.0,
                net_returned(at), net_xmit(at),
-               net_best(at) /1000, net_avg(at)/1000,
-               net_worst(at)/1000);
+               net_best(at) /1000.0, net_avg(at)/1000.0,
+               net_worst(at)/1000.0,
+               net_stdev(at)/1000.0);
     } else {
       sprintf(newLine, "???");
     }
@@ -142,6 +143,25 @@ void split_redraw(void)
 #endif
     } else {
       SPLIT_PRINT(("%d %s", at+1, newLine));
+
+      if (strcmp(newLine, "???") != 0) {
+        /* Multi path */
+        for (i=0; i < MAXPATH; i++ ) {
+          addrs = net_addrs(at, i);
+          if ( addrcmp( (void *) addrs, (void *) addr, af ) == 0 ) continue;
+          if ( addrcmp( (void *) addrs, (void *) &unspec_addr, af ) == 0 ) break;
+          char *name;
+ 
+          if (!(name = dns_lookup(addrs)))
+            name = strlongip(addrs);
+          if (show_ips) {
+            SPLIT_PRINT(("- %d %d %s %s", at+1, i+1, name, strlongip(addrs)));
+          } else {
+            SPLIT_PRINT(("- %d %d %s", at+1, i+1, name));
+          }
+        }
+      }
+ 
       fflush(stdout);
       strcpy(Lines[at], newLine);
       if (LineCount < (at+1)) {
@@ -160,7 +180,7 @@ void split_open(void)
 #endif
   LineCount = -1;
   for (i=0; i<MAX_LINE_COUNT; i++) {
-    strcpy(Lines[i], "???");
+    strcpy(Lines[i], "");
   }
 #ifndef NO_CURSES
   FILE *stdout2 = fopen("/dev/tty", "w");
