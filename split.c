@@ -123,17 +123,16 @@ void split_redraw(void)
       if (!(name = dns_lookup(addr)))
         name = strlongip(addr);
       if (show_ips) {
-        snprintf(str, sizeof(str), "%s %s", name, strlongip(addr));
+        snprintf(str, sizeof(str), "%s\t%s", name, strlongip(addr));
         name = str;
       }
       /* May be we should test name's length */
-      snprintf(newLine, sizeof(newLine), "%s %.1f %d %d %.1f %.1f %.1f %.1f %s", name,
+      snprintf(newLine, sizeof(newLine), "%s\t%s\t%.1f\t%d\t%d\t%.1f\t%.1f\t%.1f\t%.1f", name, fmt_ipinfo(addr),
                net_loss(at)/1000.0,
                net_returned(at), net_xmit(at),
                net_best(at) /1000.0, net_avg(at)/1000.0,
                net_worst(at)/1000.0,
-               net_stdev(at)/1000.0,
-               fmt_ipinfo(addr));
+               net_stdev(at)/1000.0);
     } else {
       sprintf(newLine, "???");
     }
@@ -144,7 +143,7 @@ void split_redraw(void)
       SPLIT_PRINT(("SAME LINE"));
 #endif
     } else {
-      SPLIT_PRINT(("%d %s", at+1, newLine));
+      SPLIT_PRINT(("%d\t%s", at+1, newLine));
 
       if (strcmp(newLine, "???") != 0) {
         /* Multi path */
@@ -157,9 +156,9 @@ void split_redraw(void)
           if (!(name = dns_lookup(addrs)))
             name = strlongip(addrs);
           if (show_ips) {
-            SPLIT_PRINT(("- %d %d %s %s %s", at+1, i+1, name, strlongip(addrs), fmt_ipinfo(addrs)));
+            SPLIT_PRINT(("-\t%d\t%d\t%s\t%s\t%s", at+1, i+1, name, strlongip(addrs), fmt_ipinfo(addrs)));
           } else {
-            SPLIT_PRINT(("- %d %d %s %s", at+1, i+1, name, fmt_ipinfo(addrs)));
+            SPLIT_PRINT(("-\t%d\t%d\t%s\t%s", at+1, i+1, name, fmt_ipinfo(addrs)));
           }
         }
       }
